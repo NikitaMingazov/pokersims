@@ -91,11 +91,17 @@ def compute_hand_index(cards):
     for card in cards:
         suits[card.suit].append(card.value)
 
-    # Calculate the product of card values for each suit
-    suit_products = {suit: prod(prime[value-1] for value in values) for suit, values in suits.items() if values}
+    # Calculate the bitmask value of the suit
+    suit_weights = {}
+    for suit, values in suits.items():
+        if values:
+            weight = 0
+            for value in values:
+                weight |= 1 << (value - 1) # Set the bit that corresponds to the card's value
+            suit_weights[suit] = weight
 
-    # Sort suits by product in descending order and reassign suit numbers
-    sorted_suits = sorted(suit_products.items(), key=lambda x: -x[1])
+    # Sort suits by weight in descending order and reassign suit numbers
+    sorted_suits = sorted(suit_weights.items(), key=lambda x: -x[1])
     reassigned_suits = {original_suit: new_suit for new_suit, (original_suit, _) in enumerate(sorted_suits)}
 
     # Compute the index as the product of primes for (reassigned suit, value) pairs
