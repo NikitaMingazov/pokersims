@@ -83,7 +83,7 @@ def parse_cards(input_str):
         suit = suit_map[card_str[-1].upper()]
         cards.append(Card(suit, value))
     return cards
-
+# a bitmask is used to index hands
 def compute_hand_index(cards):
     """Compute the unique index for a set of cards using prime products and reassigned suits."""
     # Group cards by suit
@@ -92,18 +92,17 @@ def compute_hand_index(cards):
         suits[card.suit].append(card.value)
 
     # Calculate the product of card values for each suit
-    suit_products = {suit: prod(values) for suit, values in suits.items() if values}
+    suit_products = {suit: prod(prime[value-1] for value in values) for suit, values in suits.items() if values}
 
     # Sort suits by product in descending order and reassign suit numbers
     sorted_suits = sorted(suit_products.items(), key=lambda x: -x[1])
     reassigned_suits = {original_suit: new_suit for new_suit, (original_suit, _) in enumerate(sorted_suits)}
 
     # Compute the index as the product of primes for (reassigned suit, value) pairs
-    index = 1
+    index = 0
     for card in cards:
         reassigned_suit = reassigned_suits[card.suit]
-        prime_index = reassigned_suit * 13 + (card.value - 1)
-        index *= prime[prime_index]
+        index |= 1 << reassigned_suit * 13 + (card.value - 1)
     return index
 
 # Stub for probability calculation
